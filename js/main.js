@@ -13,42 +13,94 @@ function showTool(toolId) {
     // Update active nav state
     const navItems = document.querySelectorAll('.sidebar-item');
     navItems.forEach(item => {
-        item.classList.remove('bg-blue-600', 'text-white');
-        item.classList.add('text-gray-300', 'hover:bg-gray-800');
+        item.classList.remove('active');
     });
     
     const activeNav = document.getElementById('nav-' + toolId);
     if (activeNav) {
-        activeNav.classList.add('bg-blue-600', 'text-white');
-        activeNav.classList.remove('text-gray-300', 'hover:bg-gray-800');
+        activeNav.classList.add('active');
     }
 }
 
 // Global Notification Helper
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
+    if (!toast) return;
+    
     toast.innerText = message;
+    
+    // Reset colors
+    toast.classList.remove('bg-gray-800', 'bg-red-500', 'bg-green-500', 'bg-blue-500');
+    
+    // Add color based on type
+    if (type === 'error') {
+        toast.classList.add('bg-red-500');
+    } else {
+        toast.classList.add('bg-green-500');
+    }
+
+    // Show
     toast.classList.remove('translate-y-24', 'opacity-0');
     toast.classList.add('translate-y-0', 'opacity-100');
     
-    setTimeout(() => {
+    // Clear previous timeout
+    if (window.toastTimeout) clearTimeout(window.toastTimeout);
+    
+    window.toastTimeout = setTimeout(() => {
         toast.classList.add('translate-y-24', 'opacity-0');
         toast.classList.remove('translate-y-0', 'opacity-100');
     }, 3000);
 }
 
-// Copy Text Helper
+// Copy Text Helper with Fallback
 function copyText(id, isText = false) {
     const el = document.getElementById(id);
+    if (!el) return;
+    
     const textToCopy = isText ? el.innerText : el.value;
     
-    if (!textToCopy) return;
+    if (!textToCopy || textToCopy.trim() === "") {
+        showToast('内容为空，无法复制', 'error');
+        return;
+    }
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        showToast('内容已复制到剪贴板');
-    }).catch(() => {
+    // Attempt using navigator.clipboard
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast('已复制到剪贴板');
+        }).catch(() => {
+            fallbackCopy(textToCopy);
+        });
+    } else {
+        fallbackCopy(textToCopy);
+    }
+}
+
+function fallbackCopy(text) {
+    try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // Ensure it's not visible
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            showToast('已复制到剪贴板');
+        } else {
+            showToast('复制失败', 'error');
+        }
+    } catch (err) {
         showToast('复制失败', 'error');
-    });
+    }
 }
 
 // --- 1. Timestamp Tool Logic ---
@@ -157,20 +209,20 @@ function generateRandom() {
     const useNumber = document.getElementById('rand-number').checked;
     const useSymbol = document.getElementById('rand-symbol').checked;
     
-    let charSet = "";
-    if (useUpper) charSet += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    if (useLower) charSet += "abcdefghijklmnopqrstuvwxyz";
-    if (useNumber) charSet += "0123456789";
-    if (useSymbol) charSet += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+    let charset = "";
+    if (useUpper) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (useLower) charset += "abcdefghijklmnopqrstuvwxyz";
+    if (useNumber) charset += "0123456789";
+    if (useSymbol) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
     
-    if (charSet === "") {
+    if (charset === "") {
         showToast('请至少选择一项字符类型', 'error');
         return;
     }
     
     let result = "";
     for (let i = 0; i < length; i++) {
-        result += charSet.charAt(Math.floor(Math.random() * charSet.length));
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
     }
     
     document.getElementById('rand-output').innerText = result;
@@ -182,5 +234,8 @@ window.onload = () => {
     showTool('timestamp');
     // Set current date in input as placeholder
     const now = new Date();
-    document.getElementById('date-input').value = formatDate(now);
+    const dateInput = document.getElementById('date-input');
+    if (dateInput) {
+        dateInput.value = formatDate(now);
+    }
 };
