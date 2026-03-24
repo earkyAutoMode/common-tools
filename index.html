@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常用小工具 - Common Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar-item.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-full md:w-64 bg-gray-900 text-white flex-shrink-0 shadow-lg">
+            <div class="p-6 text-2xl font-bold border-b border-gray-800 flex items-center">
+                <i class="fas fa-tools mr-3 text-blue-500"></i>
+                <span>常用工具箱</span>
+            </div>
+            <nav class="mt-4">
+                <a href="#" onclick="showTool('timestamp')" id="nav-timestamp" class="sidebar-item block py-3 px-6 hover:bg-gray-800 transition duration-200 active flex items-center">
+                    <i class="fas fa-clock w-6"></i> 时间戳转换
+                </a>
+                <a href="#" onclick="showTool('base64')" id="nav-base64" class="sidebar-item block py-3 px-6 hover:bg-gray-800 transition duration-200 flex items-center">
+                    <i class="fas fa-font w-6"></i> Base64 编解码
+                </a>
+                <a href="#" onclick="showTool('json')" id="nav-json" class="sidebar-item block py-3 px-6 hover:bg-gray-800 transition duration-200 flex items-center">
+                    <i class="fas fa-code w-6"></i> JSON 格式化
+                </a>
+                <a href="#" onclick="showTool('random')" id="nav-random" class="sidebar-item block py-3 px-6 hover:bg-gray-800 transition duration-200 flex items-center">
+                    <i class="fas fa-random w-6"></i> 随机字符生成
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-64 p-4 text-xs text-gray-500 hidden md:block">
+                v1.0.0 | Pure Static Tool
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-4 md:p-8">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Timestamp Tool -->
+                <div id="tool-timestamp" class="tool-section bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center border-b pb-4">
+                        <i class="fas fa-clock mr-2 text-blue-500"></i> 时间戳转换
+                    </h2>
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 p-4 rounded-lg flex justify-between items-center">
+                            <div>
+                                <span class="text-gray-600 mr-2">当前时间戳:</span>
+                                <span id="current-ts" class="font-mono text-xl font-bold text-blue-600">加载中...</span>
+                            </div>
+                            <button onclick="copyText('current-ts')" class="text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">时间戳 (秒/毫秒)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="ts-input" placeholder="输入时间戳..." class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                    <button onclick="convertTimestamp()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">转换 <i class="fas fa-arrow-right ml-1"></i></button>
+                                </div>
+                                <input type="text" id="ts-to-date-output" readonly placeholder="日期结果..." class="w-full bg-gray-50 border rounded-lg px-4 py-2 font-mono">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">日期时间 (YYYY-MM-DD HH:mm:ss)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="date-input" placeholder="输入日期..." class="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                    <button onclick="convertDate()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">转换 <i class="fas fa-arrow-right ml-1"></i></button>
+                                </div>
+                                <input type="text" id="date-to-ts-output" readonly placeholder="时间戳结果..." class="w-full bg-gray-50 border rounded-lg px-4 py-2 font-mono">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Base64 Tool -->
+                <div id="tool-base64" class="tool-section hidden bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center border-b pb-4">
+                        <i class="fas fa-font mr-2 text-blue-500"></i> Base64 编解码
+                    </h2>
+                    <div class="space-y-4">
+                        <textarea id="base64-input" rows="5" placeholder="输入原始文本或 Base64 字符串..." class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="base64Encode()" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">编码 (Encode)</button>
+                            <button onclick="base64Decode()" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">解码 (Decode)</button>
+                        </div>
+                        <div class="relative">
+                            <textarea id="base64-output" rows="5" readonly placeholder="输出结果..." class="w-full bg-gray-50 border rounded-lg px-4 py-2 font-mono"></textarea>
+                            <button onclick="copyText('base64-output')" class="absolute top-2 right-2 text-gray-400 hover:text-blue-500">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JSON Tool -->
+                <div id="tool-json" class="tool-section hidden bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center border-b pb-4">
+                        <i class="fas fa-code mr-2 text-blue-500"></i> JSON 格式化 & 校验
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="space-x-2">
+                                <button onclick="formatJSON()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">格式化</button>
+                                <button onclick="minifyJSON()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm">压缩</button>
+                                <button onclick="clearJSON()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 text-sm">清空</button>
+                            </div>
+                            <span id="json-status" class="text-sm font-medium px-2 py-1 rounded"></span>
+                        </div>
+                        <textarea id="json-input" rows="12" placeholder="粘贴 JSON 字符串进行格式化或校验..." class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm h-[400px]"></textarea>
+                    </div>
+                </div>
+
+                <!-- Random Generator Tool -->
+                <div id="tool-random" class="tool-section hidden bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center border-b pb-4">
+                        <i class="fas fa-random mr-2 text-blue-500"></i> 随机字符串/密码生成
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">生成长度: <span id="len-val" class="text-blue-600">16</span></label>
+                                <input type="range" id="rand-len" min="4" max="64" value="16" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="document.getElementById('len-val').innerText = this.value">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" id="rand-upper" checked class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                                    <span class="text-gray-700">大写字母 (A-Z)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" id="rand-lower" checked class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                                    <span class="text-gray-700">小写字母 (a-z)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" id="rand-number" checked class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                                    <span class="text-gray-700">数字 (0-9)</span>
+                                </label>
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="checkbox" id="rand-symbol" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                                    <span class="text-gray-700">特殊符号 (!@#$...)</span>
+                                </label>
+                            </div>
+                            <button onclick="generateRandom()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">立即生成</button>
+                        </div>
+                        <div class="flex flex-col justify-center items-center bg-gray-50 rounded-xl p-6 border-2 border-dashed border-gray-200">
+                            <span class="text-sm text-gray-400 mb-4 uppercase tracking-wider">生成结果</span>
+                            <div id="rand-output" class="text-xl font-mono break-all text-center text-gray-800 mb-6 min-h-[1.5em]">点击生成按钮</div>
+                            <button onclick="copyText('rand-output', true)" class="bg-white border text-blue-600 px-6 py-2 rounded-full hover:bg-blue-50 flex items-center">
+                                <i class="fas fa-copy mr-2"></i> 复制结果
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        提示内容
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
